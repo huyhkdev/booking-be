@@ -1,0 +1,41 @@
+import { HttpStatusCode } from '@/common/constants';
+import { NextFunction } from 'express';
+import { RequestCustom, ResponseCustom } from '@/common/interfaces/express';
+import ownerService from './owner.service';
+
+class OwnerController {
+  async ownerRegister(
+    request: RequestCustom,
+    response: ResponseCustom,
+    next: NextFunction
+  ) {
+    try {
+      const cvPath = request.file?.path as string;
+      const { uid } = request.userInfo;
+      await ownerService.ownerRegister(uid, cvPath);
+      return response
+        .status(HttpStatusCode.OK)
+        .json({ httpStatusCode: HttpStatusCode.OK });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async findRequest(
+    request: RequestCustom,
+    response: ResponseCustom,
+    next: NextFunction
+  ) {
+    try {
+      const { uid } = request.userInfo;
+      const infoRequest = await ownerService.findHotelOwnerRegisterById(uid);
+      return response.status(HttpStatusCode.OK).json({
+        httpStatusCode: HttpStatusCode.OK,
+        data: { infoRequest },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+export default new OwnerController();

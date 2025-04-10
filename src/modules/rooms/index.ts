@@ -9,4 +9,8 @@ RoomRouter.get(
   RoomController.findAvailableRooms
 );
 
+RoomRouter.post('/', RoomController.createRoom);
+RoomRouter.put('/:roomId', RoomController.updateRoom);
+RoomRouter.delete('/:roomId', RoomController.deleteRoom);
+
 export default RoomRouter;
