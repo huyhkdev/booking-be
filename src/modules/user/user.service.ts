@@ -166,5 +166,9 @@ class UserService {
   }
 
 
+  async updateUser(uid: string, body: any){
+    return await User.findByIdAndUpdate(uid, body);
+  }
+
 }
 export default new UserService();

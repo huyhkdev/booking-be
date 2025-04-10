@@ -9,6 +9,7 @@ import Jwt from "@/common/utils/Jwt";
 import ErrorCode from "@/common/constants/errorCode";
 import config from "@/common/config/config";
 import hashing from "@/common/utils/hashing";
+import ServerInternalException from "@/common/exception/ServerInternalExeption";
 class UserController {
   async register(
     request: Request,
@@ -18,7 +19,7 @@ class UserController {
     try {
       const errors = validationResult(request);
       if (!errors.isEmpty()) throw new BadRequestException(errors.array());
-      const { fullName, email, password} = request.body;
+      const { fullName, email, password } = request.body;
       const user = await userService.register(
         fullName,
         email,
@@ -142,6 +143,7 @@ class UserController {
         state,
         dob,
         gender,
+        avatarUrl,
       } = user;
       const data = {
         email,
@@ -150,6 +152,7 @@ class UserController {
         gender,
         role,
         state,
+        avatarUrl
       };
       return response
         .status(HttpStatusCode.OK)
@@ -315,6 +318,47 @@ class UserController {
     }
   }
 
+
+
+  async updateProfile(
+    request: RequestCustom,
+    response: ResponseCustom,
+    next: NextFunction
+  ) {
+    try {
+      const { uid } = request.userInfo;
+      const data = await userService.updateUser(uid, request.body);
+      return response
+        .status(HttpStatusCode.OK)
+        .json({ httpStatusCode: HttpStatusCode.OK, data });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+
+  async changeAvatar(
+    request: RequestCustom,
+    response: ResponseCustom,
+    next: NextFunction
+  ) {
+    try {
+      if (!request.file) {
+        throw new ServerInternalException({ errorCode: ErrorCode.UPLOAD_ERROR, errorMessage: "Error when upload image" });
+      }
+      const { uid } = request.userInfo;
+      const avatarUrl = request.file.path;
+      console.log(avatarUrl)
+      // const data = await userService.updateUser(uid, request.body);
+      return response
+        .status(HttpStatusCode.OK)
+        .json({ httpStatusCode: HttpStatusCode.OK });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+
   async unblockUsers(
     request: RequestCustom,
     response: ResponseCustom,
@@ -333,7 +377,7 @@ class UserController {
 
 
 
- 
- 
+
+
 }
 export default new UserController();
