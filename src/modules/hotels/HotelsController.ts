@@ -3,6 +3,8 @@ import HotelsService from './HotelsService';
 import { validationResult } from 'express-validator';
 import BadRequestException from '@/common/exception/BadRequestException';
 import { IHotel } from '@/databases/entities/Hotel';
+import { RequestCustom, ResponseCustom } from '@/common/interfaces/express';
+import { HttpStatusCode } from '@/common/constants';
 
 class HotelsController {
   async findAllHotel(req: Request, res: Response, next: NextFunction) {
@@ -37,10 +39,11 @@ class HotelsController {
   async findHotelById(req: Request, res: Response, next: NextFunction) {
     try {
       const { hotelId } = req.params;
-      const {
-        checkInDate,
-      } = req.query;
-      const hotels = await HotelsService.findHotelById(hotelId, checkInDate as string);
+      const { checkInDate } = req.query;
+      const hotels = await HotelsService.findHotelById(
+        hotelId,
+        checkInDate as string
+      );
       return res.status(200).json({
         msg: 'Find Hotel By Id Success',
         data: hotels,
@@ -50,17 +53,66 @@ class HotelsController {
       next(error);
     }
   }
+  async findHotelByHotelIdOwner(
+    req: RequestCustom,
+    res: ResponseCustom,
+    next: NextFunction
+  ) {
+    try {
+      const { uid } = req.userInfo;
+      const { hotelId } = req.params;
+      const hotel = await HotelsService.findHotelByHotelIdOwner(uid, hotelId);
+      return res.status(HttpStatusCode.OK).json({
+        httpStatusCode: HttpStatusCode.OK,
+        data: hotel,
+      });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
 
-  async createHotel(req: Request, res: Response, next: NextFunction) {
+  async findHotelsByIdOwner(
+    req: RequestCustom,
+    res: ResponseCustom,
+    next: NextFunction
+  ) {
+    try {
+      const { uid } = req.userInfo;
+      const hotels = await HotelsService.findHotelsByOwnerId(uid);
+      return res.status(HttpStatusCode.OK).json({
+        httpStatusCode: HttpStatusCode.OK,
+        data: hotels,
+      });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
+  async createHotel(
+    req: RequestCustom,
+    res: ResponseCustom,
+    next: NextFunction
+  ) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       throw new BadRequestException(errors.array());
     }
     try {
       const hotelData: IHotel = req.body;
-      const newHotel = await HotelsService.createHotel(hotelData);
-      return res.status(201).json({
-        msg: 'Create Hotel Success',
+      const files = req.files;
+      const { uid } = req.userInfo;
+      const imagePaths = Array.isArray(files)
+        ? files.map((file: Express.Multer.File) => file.path)
+        : [];
+      const newHotel = await HotelsService.createHotel(
+        uid,
+        hotelData,
+        imagePaths
+      );
+      return res.status(HttpStatusCode.OK).json({
+        httpStatusCode: HttpStatusCode.OK,
         data: newHotel,
       });
     } catch (error) {

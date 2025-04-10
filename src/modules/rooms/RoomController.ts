@@ -5,6 +5,8 @@ import { validationResult } from 'express-validator';
 import BadRequestException from '@/common/exception/BadRequestException';
 import { IRoom } from '@/databases/entities/Room';
 import HotelsService from '../hotels/HotelsService';
+import { RequestCustom, ResponseCustom } from '@/common/interfaces/express';
+import { HttpStatusCode } from '@/common/constants';
 class RoomController {
   async findAvailableRooms(req: Request, res: Response, next: NextFunction) {
     const errors = validationResult(req);
@@ -49,25 +51,34 @@ class RoomController {
     }
   }
 
-  async createRoom(req: Request, res: Response, next: NextFunction) {
+  async createRoom(
+    req: RequestCustom,
+    res: ResponseCustom,
+    next: NextFunction
+  ) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       throw new BadRequestException(errors.array());
     }
     try {
+      const { uid } = req.userInfo;
       const roomData = req.body;
 
-      const hotel = await HotelsService.findHotelByIdOwner(roomData.hotel);
+      const hotel = await HotelsService.findHotelByHotelIdOwner(
+        uid,
+        roomData.hotel
+      );
       if (!hotel) {
-        return res.status(404).json({
-          msg: 'Hotel not found',
+        return res.status(HttpStatusCode.NOT_FOUND).json({
+          httpStatusCode: HttpStatusCode.NOT_FOUND,
+          data: 'Hotel not found',
         });
       }
 
       const newRoom = await RoomService.createRoom(roomData);
 
-      return res.status(201).json({
-        msg: 'Create Room Success',
+      return res.status(HttpStatusCode.CREATED).json({
+        httpStatusCode: HttpStatusCode.CREATED,
         data: newRoom,
       });
     } catch (error) {
