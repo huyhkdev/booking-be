@@ -3,6 +3,7 @@ import { IReview } from './Review';
 
 // Định nghĩa interface cho Hotel
 export interface IHotel extends Document {
+  user: mongoose.Types.ObjectId;
   name: string;
   address: string;
   city: string;
@@ -25,6 +26,7 @@ export interface IHotel extends Document {
 
 const hotelSchema: Schema<IHotel> = new Schema(
   {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     name: { type: String, required: true },
     address: { type: String, required: true },
     city: { type: String, required: true },

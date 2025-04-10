@@ -1,31 +1,28 @@
-import ErrorCode from "@/common/constants/errorCode";
-import BadRequestException from "@/common/exception/BadRequestException";
-import ForbiddenException from "@/common/exception/ForbiddenException";
-import UnauthorizedExeption from "@/common/exception/UnauthorizedExeption";
-import hashing from "@/common/utils/hashing";
-import Jwt from "@/common/utils/Jwt";
-import { User } from "@/databases/entities/User";
+import ErrorCode from '@/common/constants/errorCode';
+import BadRequestException from '@/common/exception/BadRequestException';
+import ForbiddenException from '@/common/exception/ForbiddenException';
+import UnauthorizedExeption from '@/common/exception/UnauthorizedExeption';
+import hashing from '@/common/utils/hashing';
+import Jwt from '@/common/utils/Jwt';
+import { User } from '@/databases/entities/User';
+import { HotelOwnerRegister } from '@/databases/entities/HotelOwnerRegister';
+import { ObjectId } from 'mongoose';
 
 class UserService {
-
   async createActiveUser(fullName: string, email: string, picture: string) {
     return await User.create({
       fullName,
       email,
-      state: "active",
-      avatarUrl: picture
+      state: 'active',
+      avatarUrl: picture,
     });
   }
-  async register(
-    fullName: string,
-    email: string,
-    password: string,
-  ) {
+  async register(fullName: string, email: string, password: string) {
     const userExist = await User.findOne({ email });
     if (userExist) {
       throw new BadRequestException({
         errorCode: ErrorCode.EXIST,
-        errorMessage: "Email has been registered",
+        errorMessage: 'Email has been registered',
       });
     }
     const hashedPassword = await hashing.hashPassword(password);
@@ -44,10 +41,10 @@ class UserService {
     if (!userExist) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: "Not found user",
+        errorMessage: 'Not found user',
       });
     }
-    userExist.state = "active";
+    userExist.state = 'active';
     await userExist.save();
   }
   async login(email: string, password: string) {
@@ -55,19 +52,19 @@ class UserService {
     if (!user) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: "Not found user with this email",
+        errorMessage: 'Not found user with this email',
       });
     }
-    if (user.role == "blocker") {
+    if (user.role == 'blocker') {
       throw new ForbiddenException({
         errorCode: ErrorCode.BLOCKED,
-        errorMessage: "You are blocked",
+        errorMessage: 'You are blocked',
       });
     }
-    if (user.state !== "active") {
+    if (user.state !== 'active') {
       throw new BadRequestException({
         errorCode: ErrorCode.VERIFY_EMAIL_NEED,
-        errorMessage: "You need to verify email",
+        errorMessage: 'You need to verify email',
       });
     }
 
@@ -78,7 +75,7 @@ class UserService {
     if (!isCorrectPassword)
       throw new UnauthorizedExeption({
         errorCode: ErrorCode.INCORRECT,
-        errorMessage: "Incorrect password",
+        errorMessage: 'Incorrect password',
       });
     const accessToken = Jwt.generateAccessToken(user.id, user.role);
     const refreshToken = Jwt.generateRefreshToken(user.id);
@@ -99,7 +96,7 @@ class UserService {
     if (!user) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: "Not found user",
+        errorMessage: 'Not found user',
       });
     }
     user.password = hashedPassword;
@@ -111,10 +108,10 @@ class UserService {
     if (!user) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: "Not found user",
+        errorMessage: 'Not found user',
       });
     }
-    user.role = "blocker";
+    user.role = 'blocker';
     await user.save();
   }
 
@@ -123,11 +120,14 @@ class UserService {
     if (!users.length) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: "No users found",
+        errorMessage: 'No users found',
       });
     }
 
-    await User.updateMany({ _id: { $in: uids } }, { $set: { role: "blocker" } });
+    await User.updateMany(
+      { _id: { $in: uids } },
+      { $set: { role: 'blocker' } }
+    );
   }
 
   async unblockUsers(uids: string[]) {
@@ -135,11 +135,11 @@ class UserService {
     if (!users.length) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: "No users found",
+        errorMessage: 'No users found',
       });
     }
 
-    await User.updateMany({ _id: { $in: uids } }, { $set: { role: "user" } });
+    await User.updateMany({ _id: { $in: uids } }, { $set: { role: 'user' } });
   }
 
   async toggleNotification(uid: string) {
@@ -147,28 +147,29 @@ class UserService {
     if (!user) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: "Not found user",
+        errorMessage: 'Not found user',
       });
     }
     await user.save();
   }
 
-
   async findAllUsers() {
-    const users = await User.find({ role: ["user", "blocker"] });
+    const users = await User.find({ role: ['user', 'blocker'] });
     if (!users.length) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: "No users found",
+        errorMessage: 'No users found',
       });
     }
     return users;
   }
 
 
+
   async updateUser(uid: string, body: any){
     return await User.findByIdAndUpdate(uid, body);
   }
+
 
 }
 export default new UserService();

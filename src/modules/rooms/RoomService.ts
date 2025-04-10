@@ -1,5 +1,7 @@
 import Booking from '@/databases/entities/Booking';
-import Room from '@/databases/entities/Room';
+import Hotel from '@/databases/entities/Hotel';
+import Room, { IRoom } from '@/databases/entities/Room';
+import mongoose from 'mongoose';
 
 class RoomService {
   private async findRoomByDate(checkInDate: Date) {
@@ -130,6 +132,56 @@ class RoomService {
       rooms: finalResult.slice(startIndex, endIndex),
       total: finalResult.length,
     };
+  }
+
+  async createRoom(roomData: IRoom) {
+    const room = new Room(roomData);
+    await room.save();
+
+    const hotel = await Hotel.findById(roomData.hotel);
+    if (hotel) {
+      hotel.rooms.push(room._id as mongoose.Types.ObjectId);
+      await hotel.save();
+    }
+
+    return room;
+  }
+
+  async updateRoom(roomId: string, updateData: Partial<IRoom>) {
+    const room = await Room.findByIdAndUpdate(roomId, updateData, { new: true });
+    if (!room) {
+      throw new Error('Room not found');
+    }
+    return room;
+  }
+
+  async deleteRoom(roomId: string) {
+    const room = await Room.findByIdAndDelete(roomId);
+    if (!room) {
+      throw new Error('Room not found');
+    }
+
+    const hotel = await Hotel.findOne({ rooms: roomId });
+    if (hotel) {
+      hotel.rooms = hotel.rooms.filter(
+        (roomIdInArray) => roomIdInArray.toString() !== roomId
+      );
+      await hotel.save();
+    }
+
+    return room;
+  }
+
+  async findRoomsByHotel(hotelId: string) {
+    return await Room.find({ hotel: hotelId });
+  }
+
+  async findRoomById(roomId: string) {
+    const room = await Room.findById(roomId);
+    if (!room) {
+      throw new Error('Room not found');
+    }
+    return room;
   }
 }
 

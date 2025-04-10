@@ -1,3 +1,4 @@
+import { Role } from "@/databases/entities/User";
 import { Request, Response } from "express";
 
 export interface ErrorDetail {
@@ -16,7 +17,7 @@ export type ResponseCustom = Response<BodyResponse>;
 export interface UserInfo {
   email: string;
   uid: string;
-  role: string;
+  role: Role;
   state: string;
 }
 
