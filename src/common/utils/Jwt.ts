@@ -11,7 +11,7 @@ class JwtHandler {
         role
       },
       config.JWTKey,
-      { expiresIn: '1h' }
+      { expiresIn: '30d' }
     );
 
     return accessToken;

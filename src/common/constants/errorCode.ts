@@ -13,5 +13,6 @@ enum ErrorCode {
   MISS_PARAMS = 100213,
   ADMIN_ISNT = 100214,
   BLOCKED = 100215,
+  UPLOAD_ERROR=100216
 }
 export default ErrorCode;
