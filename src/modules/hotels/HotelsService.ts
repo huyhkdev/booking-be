@@ -38,7 +38,7 @@ class HotelsService {
   }
 
   async findHotelByHotelIdOwner(ownerId: string, hotelId: string) {
-    const hotel = await Hotel.findOne({ _id: hotelId, user: ownerId });
+    const hotel = await Hotel.findOne({ _id: hotelId, user: ownerId }).populate("rooms");
     if (!hotel) {
       throw new Error(
         'Hotel not found or you do not have access to this hotel'
@@ -62,25 +62,27 @@ class HotelsService {
     return await hotel.save();
   }
 
-  async updateHotel(hotelId: string, updateData: Partial<IHotel>) {
-    const hotel = await Hotel.findByIdAndUpdate(hotelId, updateData, {
+  async updateHotel(uid: string, hotelId: string, updateData: Partial<IHotel>) {
+    const hotel = await Hotel.findOne({ _id: hotelId, user: uid });
+    if (!hotel) {
+      throw new Error('Hotel not found or you do not have access to this hotel');
+    }
+    const updatedHotel = await Hotel.findByIdAndUpdate(hotelId, updateData, {
       new: true,
     });
-    if (!hotel) {
-      throw new Error('Hotel not found');
-    }
-    return hotel;
+    return updatedHotel;
   }
 
-  async deleteHotel(hotelId: string) {
-    const hotel = await Hotel.findByIdAndDelete(hotelId);
+  async deleteHotel(uid:string, hotelId: string) {
+    const hotel = await Hotel.findOne({ _id: hotelId, user: uid });
     if (!hotel) {
-      throw new Error('Hotel not found');
+      throw new Error('Hotel not found or you do not have access to this hotel');
     }
-
+    const deleteHotel = await Hotel.findByIdAndDelete(hotelId);
+    
     await Room.deleteMany({ hotel: hotelId });
 
-    return hotel;
+    return deleteHotel;
   }
 }
 export default new HotelsService();

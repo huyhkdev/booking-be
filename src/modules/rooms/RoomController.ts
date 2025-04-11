@@ -87,17 +87,22 @@ class RoomController {
     }
   }
 
-  async updateRoom(req: Request, res: Response, next: NextFunction) {
+  async updateRoom(
+    req: RequestCustom,
+    res: ResponseCustom,
+    next: NextFunction
+  ) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       throw new BadRequestException(errors.array());
     }
     try {
       const { roomId } = req.params;
+      const { uid } = req.userInfo;
       const updateData: Partial<IRoom> = req.body;
-      const updatedRoom = await RoomService.updateRoom(roomId, updateData);
-      return res.status(200).json({
-        msg: 'Update Room Success',
+      const updatedRoom = await RoomService.updateRoom(roomId, uid, updateData);
+      return res.status(HttpStatusCode.OK).json({
+        httpStatusCode: HttpStatusCode.OK,
         data: updatedRoom,
       });
     } catch (error) {
@@ -119,6 +124,25 @@ class RoomController {
       next(error);
     }
   }
+  async findRoomByRoomIdOwner(
+    req: RequestCustom,
+    res: ResponseCustom,
+    next: NextFunction
+  ) {
+    try {
+      const { uid } = req.userInfo;
+      const { roomId } = req.params;
+      const room = await RoomService.findRoomByRoomIdOwner(uid, roomId);
+      return res.status(HttpStatusCode.OK).json({
+        httpStatusCode: HttpStatusCode.OK,
+        data: room,
+      });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
   async findRoomsByHotel(req: Request, res: Response, next: NextFunction) {
     try {
       const { hotelId } = req.params;

@@ -84,7 +84,7 @@ class RoomService {
     const startIndex = (index - 1) * Number(limit);
     const endIndex = startIndex + Number(limit);
     let roomResult = this.findByNumberOfPeople(rooms, capacity, room);
-    if (maxPrice && minPrice ) {
+    if (maxPrice && minPrice) {
       roomResult = roomResult.filter(
         (item) =>
           Number(item.pricePerNight) >= minPrice &&
@@ -115,18 +115,21 @@ class RoomService {
       },
       {}
     );
-    const uniqueRoomsByHotel = Object.keys(roomByHotel).reduce((result: Record<string, any[]>, hotelId) => {
-      const uniqueRooms: any[] = [];
-      const seenNames = new Set();
-      for (const r of roomByHotel[hotelId]) {
-        if (!seenNames.has(r.name)) {
-          seenNames.add(r.name);
-          uniqueRooms.push(r);
+    const uniqueRoomsByHotel = Object.keys(roomByHotel).reduce(
+      (result: Record<string, any[]>, hotelId) => {
+        const uniqueRooms: any[] = [];
+        const seenNames = new Set();
+        for (const r of roomByHotel[hotelId]) {
+          if (!seenNames.has(r.name)) {
+            seenNames.add(r.name);
+            uniqueRooms.push(r);
+          }
         }
-      }
-      result[hotelId] = uniqueRooms;
-      return result;
-    }, {});
+        result[hotelId] = uniqueRooms;
+        return result;
+      },
+      {}
+    );
     const finalResult = Object.values(uniqueRoomsByHotel).flat();
     return {
       rooms: finalResult.slice(startIndex, endIndex),
@@ -147,10 +150,19 @@ class RoomService {
     return room;
   }
 
-  async updateRoom(roomId: string, updateData: Partial<IRoom>) {
-    const room = await Room.findByIdAndUpdate(roomId, updateData, { new: true });
+  async updateRoom(
+    roomId: string,
+    ownerId: string,
+    updateData: Partial<IRoom>
+  ) {
+    const room = await Room.findByIdAndUpdate(roomId, updateData, {
+      new: true,
+    });
     if (!room) {
       throw new Error('Room not found');
+    }
+    if (room.hotel.user.toString() !== ownerId) {
+      throw new Error('Unauthorized access');
     }
     return room;
   }
@@ -171,7 +183,17 @@ class RoomService {
 
     return room;
   }
+  async findRoomByRoomIdOwner(roomId: string, ownerId: string) {
+    const room = await Room.findOne({ _id: roomId });
+    if (!room) {
+      throw new Error('Room not found');
+    }
+    if (room.hotel.user.toString() !== ownerId) {
+      throw new Error('Unauthorized access');
+    }
 
+    return room;
+  }
   async findRoomsByHotel(hotelId: string) {
     return await Room.find({ hotel: hotelId });
   }
