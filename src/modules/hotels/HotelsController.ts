@@ -121,17 +121,43 @@ class HotelsController {
     }
   }
 
-  async updateHotel(req: Request, res: Response, next: NextFunction) {
+  async updateHotel(
+    req: RequestCustom,
+    res: ResponseCustom,
+    next: NextFunction
+  ) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       throw new BadRequestException(errors.array());
     }
+
     try {
+      const { uid } = req.userInfo;
       const { hotelId } = req.params;
       const updateData: Partial<IHotel> = req.body;
-      const updatedHotel = await HotelsService.updateHotel(hotelId, updateData);
-      return res.status(200).json({
-        msg: 'Update Hotel Success',
+      const oldImages: string[] = req.body.oldImages
+        ? JSON.parse(req.body.oldImages)
+        : [];
+
+      const files = req.files as Express.Multer.File[];
+
+      const newImagePaths = files?.map((file) => file.path) ?? [];
+
+      if (oldImages.length && Array.isArray(oldImages)) {
+        updateData.images = [...oldImages, ...newImagePaths];
+      } else if (updateData.images) {
+        updateData.images = [...updateData.images, ...newImagePaths];
+      } else {
+        updateData.images = newImagePaths;
+      }
+
+      const updatedHotel = await HotelsService.updateHotel(
+        uid,
+        hotelId,
+        updateData
+      );
+      return res.status(HttpStatusCode.OK).json({
+        httpStatusCode: HttpStatusCode.OK,
         data: updatedHotel,
       });
     } catch (error) {
@@ -140,12 +166,13 @@ class HotelsController {
     }
   }
 
-  async deleteHotel(req: Request, res: Response, next: NextFunction) {
+  async deleteHotel(req: RequestCustom, res: ResponseCustom, next: NextFunction) {
     try {
+      const { uid } = req.userInfo;
       const { hotelId } = req.params;
-      const deletedHotel = await HotelsService.deleteHotel(hotelId);
-      return res.status(200).json({
-        msg: 'Delete Hotel Success',
+      const deletedHotel = await HotelsService.deleteHotel(uid, hotelId);
+      return res.status(HttpStatusCode.OK).json({
+        httpStatusCode: HttpStatusCode.OK,
         data: deletedHotel,
       });
     } catch (error) {

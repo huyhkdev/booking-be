@@ -30,6 +30,7 @@ HotelsRouter.put(
   '/:hotelId',
   authMiddleware,
   ownerMiddleware,
+  uploadCloud.array('images'),
   HotelsController.updateHotel
 );
 HotelsRouter.delete(
