@@ -365,7 +365,7 @@ class UserController {
       const { uid } = request.userInfo;
       const avatarUrl = request.file.path;
       console.log(avatarUrl)
-      // const data = await userService.updateUser(uid, request.body);
+      await userService.updateAvatar(uid, avatarUrl);
       return response
         .status(HttpStatusCode.OK)
         .json({ httpStatusCode: HttpStatusCode.OK });

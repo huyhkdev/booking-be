@@ -166,9 +166,16 @@ class UserService {
 
 
 
-  async updateUser(uid: string, body: any){
+  async updateUser(uid: string, body: any) {
     return await User.findByIdAndUpdate(uid, body);
   }
+
+  async updateAvatar(uid: string, avatarUrl: string) {
+    return await User.findByIdAndUpdate(uid, { avatarUrl });
+  }
+
+
+
 
 
 }

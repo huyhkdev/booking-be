@@ -20,6 +20,6 @@ userRouter.post('/admin/block', authMiddleware, adminMiddleware, userController.
 userRouter.post('/admin/un-block', authMiddleware, adminMiddleware, userController.unblockUsers);
 
 userRouter.post('/login-google', firebaseMiddleware, userController.loginGoogle); // request to get verify email
-userRouter.post('change-avatar',authMiddleware, uploadCloud.single('image'), userController.changeAvatar )
+userRouter.post('/change-avatar',authMiddleware, uploadCloud.single('image'), userController.changeAvatar )
 
 export default userRouter;
