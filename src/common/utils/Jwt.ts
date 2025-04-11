@@ -47,7 +47,7 @@ class JwtHandler {
         email
       },
       config.JWTKey,
-      { expiresIn: '5m' }
+      { expiresIn: '15m' }
     );
 
     return emailToken;

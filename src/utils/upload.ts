@@ -27,7 +27,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinaryV2,
   params: (req, file) => {
     return {
-      folder: 'Han_Cf',
+      folder: 'Hotel',
     };
   }, // Chuyển đổi thành kiểu Options
 });
