@@ -1,6 +1,9 @@
+import ErrorCode from '@/common/constants/errorCode';
+import BadRequestException from '@/common/exception/BadRequestException';
 import Booking from '@/databases/entities/Booking';
 import Hotel from '@/databases/entities/Hotel';
-import Room, { IRoom } from '@/databases/entities/Room';
+import Room, { IRoom, IRoomCreate } from '@/databases/entities/Room';
+import { User } from '@/databases/entities/User';
 import mongoose from 'mongoose';
 
 class RoomService {
@@ -137,15 +140,21 @@ class RoomService {
     };
   }
 
-  async createRoom(roomData: IRoom) {
+  async createRoom(roomData: IRoomCreate, images: string[]) {
+    const hotel = await Hotel.findById(roomData.hotel);
+    if (!hotel) {
+      throw new Error(
+        'Hotel not found or you do not have access to this hotel'
+      );
+    }
     const room = new Room(roomData);
+    room.hotel = hotel;
+    room.isAvailable = true;
+    room.images = images;
     await room.save();
 
-    const hotel = await Hotel.findById(roomData.hotel);
-    if (hotel) {
-      hotel.rooms.push(room._id as mongoose.Types.ObjectId);
-      await hotel.save();
-    }
+    hotel.rooms.push(room._id as mongoose.Types.ObjectId);
+    await hotel.save();
 
     return room;
   }
@@ -155,31 +164,44 @@ class RoomService {
     ownerId: string,
     updateData: Partial<IRoom>
   ) {
+    const user = await User.findOne({ _id: ownerId });
+    if (!user || user.role === 'blocker') {
+      throw new BadRequestException({
+        errorCode: ErrorCode.NOT_FOUND,
+        errorMessage: 'Not found user',
+      });
+    }
+    const roomCheck = await Room.findById(roomId);
+    if (!roomCheck) {
+      throw new Error('Room not found');
+    }
+    const hotelCheck = await Hotel.findOne({
+      user: ownerId,
+      rooms: roomCheck._id,
+    });
+    if (!hotelCheck) {
+      throw new Error('Unauthorized access');
+    }
     const room = await Room.findByIdAndUpdate(roomId, updateData, {
       new: true,
     });
-    if (!room) {
-      throw new Error('Room not found');
-    }
-    if (room.hotel.user.toString() !== ownerId) {
-      throw new Error('Unauthorized access');
-    }
+
     return room;
   }
 
-  async deleteRoom(roomId: string) {
+  async deleteRoom(uid: string, roomId: string) {
+    const hotel = await Hotel.findOne({ user: uid, rooms: roomId });
     const room = await Room.findByIdAndDelete(roomId);
     if (!room) {
       throw new Error('Room not found');
     }
-
-    const hotel = await Hotel.findOne({ rooms: roomId });
-    if (hotel) {
-      hotel.rooms = hotel.rooms.filter(
-        (roomIdInArray) => roomIdInArray.toString() !== roomId
-      );
-      await hotel.save();
+    if (!hotel) {
+      throw new Error('Unauthorized access');
     }
+    hotel.rooms = hotel.rooms.filter(
+      (roomIdInArray) => roomIdInArray.toString() !== roomId
+    );
+    await hotel.save();
 
     return room;
   }
@@ -195,7 +217,9 @@ class RoomService {
     return room;
   }
   async findRoomsByHotelOwner(uid: string, hotelId: string) {
-    const hotel = await Hotel.findOne({ _id: hotelId, user: uid }).populate("rooms");
+    const hotel = await Hotel.findOne({ _id: hotelId, user: uid }).populate(
+      'rooms'
+    );
     if (!hotel) {
       throw new Error(
         'Hotel not found or you do not have access to this hotel'

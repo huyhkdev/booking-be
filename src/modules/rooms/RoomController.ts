@@ -3,7 +3,7 @@ import RoomService from './RoomService';
 import 'express-async-errors';
 import { validationResult } from 'express-validator';
 import BadRequestException from '@/common/exception/BadRequestException';
-import { IRoom } from '@/databases/entities/Room';
+import { IRoom, IRoomCreate } from '@/databases/entities/Room';
 import HotelsService from '../hotels/HotelsService';
 import { RequestCustom, ResponseCustom } from '@/common/interfaces/express';
 import { HttpStatusCode } from '@/common/constants';
@@ -62,7 +62,11 @@ class RoomController {
     }
     try {
       const { uid } = req.userInfo;
-      const roomData = req.body;
+      const roomData: IRoomCreate = req.body;
+      const files = req.files;
+      const imagePaths = Array.isArray(files)
+        ? files.map((file: Express.Multer.File) => file.path)
+        : [];
 
       const hotel = await HotelsService.findHotelByHotelIdOwner(
         uid,
@@ -74,8 +78,7 @@ class RoomController {
           data: 'Hotel not found',
         });
       }
-
-      const newRoom = await RoomService.createRoom(roomData);
+      const newRoom = await RoomService.createRoom(roomData, imagePaths);
 
       return res.status(HttpStatusCode.CREATED).json({
         httpStatusCode: HttpStatusCode.CREATED,
@@ -100,6 +103,22 @@ class RoomController {
       const { roomId } = req.params;
       const { uid } = req.userInfo;
       const updateData: Partial<IRoom> = req.body;
+      const oldImages: string[] = req.body.oldImages
+        ? JSON.parse(req.body.oldImages)
+        : [];
+
+      const files = req.files as Express.Multer.File[];
+
+      const newImagePaths = files?.map((file) => file.path) ?? [];
+
+      if (oldImages.length && Array.isArray(oldImages)) {
+        updateData.images = [...oldImages, ...newImagePaths];
+      } else if (updateData.images) {
+        updateData.images = [...updateData.images, ...newImagePaths];
+      } else {
+        updateData.images = newImagePaths;
+      }
+
       const updatedRoom = await RoomService.updateRoom(roomId, uid, updateData);
       return res.status(HttpStatusCode.OK).json({
         httpStatusCode: HttpStatusCode.OK,
@@ -111,12 +130,17 @@ class RoomController {
     }
   }
 
-  async deleteRoom(req: Request, res: Response, next: NextFunction) {
+  async deleteRoom(
+    req: RequestCustom,
+    res: ResponseCustom,
+    next: NextFunction
+  ) {
     try {
       const { roomId } = req.params;
-      const deletedRoom = await RoomService.deleteRoom(roomId);
-      return res.status(200).json({
-        msg: 'Delete Room Success',
+      const { uid } = req.userInfo;
+      const deletedRoom = await RoomService.deleteRoom(uid, roomId);
+      return res.status(HttpStatusCode.OK).json({
+        httpStatusCode: HttpStatusCode.OK,
         data: deletedRoom,
       });
     } catch (error) {
