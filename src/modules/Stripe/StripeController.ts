@@ -5,6 +5,7 @@ import BookingService from '../booking/BookingService';
 import Room from '@/databases/entities/Room';
 import mongoose from 'mongoose';
 import config from '@/common/config/config';
+import { Wallet } from '@/databases/entities/Wallet';
 
 class StripeController {
   async enventByStripe(
@@ -25,6 +26,11 @@ class StripeController {
         const session = event.data.object;
         const { orderData } = session.metadata;
         const parsedOrderData = JSON.parse(orderData);
+        const wallet = await Wallet.findOne({ owner: parsedOrderData.ownerId });
+        if (!wallet) {
+          return;
+        }
+
         const { rooms, checkInDate, checkOutDate, paymentMethod } =
           parsedOrderData;
 
@@ -49,15 +55,19 @@ class StripeController {
           (sum, price) => sum + price,
           0
         );
-
         await BookingService.createBooking(
           rooms.map((room) => room.id),
           totalBookingPrice,
           totalGuests,
           new Date(checkInDate),
           new Date(checkOutDate),
-          paymentMethod
+          paymentMethod,
+          session.payment_intent
         );
+        const ownerAmount = (totalBookingPrice / 100) * 90;
+        wallet.balance += ownerAmount;
+
+        await wallet.save();
 
         return response.sendStatus(200);
       }
