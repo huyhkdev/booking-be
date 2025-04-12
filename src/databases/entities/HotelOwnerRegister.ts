@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { UserAttrs } from "./User";
 
 export type HotelOwnerStatus = "pending" | "approved" | "rejected";
 
@@ -9,7 +10,7 @@ interface HotelOwnerRegisterAttrs {
 }
 
 export interface HotelOwnerRegisterDoc extends mongoose.Document {
-  user: mongoose.Schema.Types.ObjectId;
+  user:  mongoose.Schema.Types.ObjectId;
   hotelInfoFileUrl: string;
   status: HotelOwnerStatus;
   createdAt: Date;

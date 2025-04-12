@@ -1,6 +1,9 @@
 import config from '@/common/config/config';
+import BadRequestException from '@/common/exception/BadRequestException';
 import Booking, { IBooking } from '@/databases/entities/Booking';
+import Hotel from '@/databases/entities/Hotel';
 import Room from '@/databases/entities/Room';
+import { differenceInBusinessDays, differenceInDays } from 'date-fns';
 import mongoose from 'mongoose';
 import Stripe from 'stripe';
 
@@ -15,15 +18,22 @@ class BookingService {
     paymentMethod: string
   ) {
     const stripe = new Stripe(config.stripeSecret);
-    const orderData = {
+    let orderData = {
       rooms,
       checkInDate,
       checkOutDate,
       paymentMethod,
+      ownerId: "",
     };
     const roomDetails = await Room.find({
       _id: { $in: rooms.map((room) => room.id) },
     });
+    const hotelId = roomDetails[0].hotel;
+    const hotel = await Hotel.findById(hotelId);
+    if (!hotel) {
+      throw new BadRequestException({ errorCode: "", errorMessage: "Không tìm thấy hotel" })
+    }
+    orderData = { ...orderData, ownerId: hotel.user.toString() };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let totalAmount = 0;
     const lineItems = rooms.map((room) => {
@@ -33,15 +43,14 @@ class BookingService {
       if (!roomDetail) {
         throw new Error(`Room with ID ${room.id} not found`);
       }
-
-      const totalPriceByRoom = roomDetail.pricePerNight;
+      const totalPriceByRoom = roomDetail.pricePerNight * differenceInDays(new Date(checkOutDate), new Date(checkInDate));
       totalAmount += totalPriceByRoom;
       return {
         price_data: {
           currency: 'VND',
           product_data: {
             name: `Booking Room ${room.id}`,
-            description: `Room booking from ${checkInDate} to ${checkOutDate}`,
+            description: `Room booking from ${new Date(checkInDate).toLocaleDateString()} to ${new Date(checkOutDate).toLocaleDateString()}`,
           },
           unit_amount: totalPriceByRoom,
         },
@@ -69,7 +78,8 @@ class BookingService {
     totalGuests: number,
     checkInDate: Date,
     checkOutDate: Date,
-    paymentMethod: string
+    paymentMethod: string,
+    transactionID: string
   ): Promise<IBooking> {
     const booking = new Booking({
       room: rooms,
@@ -79,6 +89,7 @@ class BookingService {
       checkOutDate,
       paymentMethod,
       status: 'confirmed',
+      transactionID,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

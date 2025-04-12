@@ -19,5 +19,6 @@ export interface ENV {
   STRIPE_SECRET: string | undefined;
   ENDPOINT_SECRET: string | undefined;
   API_URL: string | undefined;
+  STRIPE_ACCOUNT_RETURN_URL: string | undefined;
 
 }

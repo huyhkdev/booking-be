@@ -21,6 +21,24 @@ class OwnerController {
     }
   }
 
+
+  async withdrawMoney(
+    request: RequestCustom,
+    response: ResponseCustom,
+    next: NextFunction
+  ) {
+    try {
+      const { amount } = request.body;
+      const { uid } = request.userInfo;
+      await ownerService.withdrawMoney(uid, amount);
+      return response
+        .status(HttpStatusCode.OK)
+        .json({ httpStatusCode: HttpStatusCode.OK });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async findRequest(
     request: RequestCustom,
     response: ResponseCustom,

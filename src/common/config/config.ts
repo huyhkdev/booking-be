@@ -68,6 +68,12 @@ class ConfigService {
   get pointSecret(): string {
     return this.getEnv('ENDPOINT_SECRET');
   }
+
+  get striptAccountReturnUrl(): string {
+    return this.getEnv('STRIPE_ACCOUNT_RETURN_URL');
+  }
+
+  
 }
 const config = new ConfigService();
 export default config;
