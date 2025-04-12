@@ -108,8 +108,8 @@ class HotelsController {
       const imagePaths = Array.isArray(files)
         ? files.map((file: Express.Multer.File) => file.path)
         : [];
-        hotelData.latitude = latitude
-        hotelData.longitude = longitude
+        hotelData.latitude = latitude.toString()
+        hotelData.longitude = longitude.toString()
       const newHotel = await HotelsService.createHotel(
         uid,
         hotelData,

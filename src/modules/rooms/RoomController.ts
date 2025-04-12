@@ -143,12 +143,17 @@ class RoomController {
     }
   }
 
-  async findRoomsByHotel(req: Request, res: Response, next: NextFunction) {
+  async findRoomsByHotelOwner(
+    req: RequestCustom,
+    res: ResponseCustom,
+    next: NextFunction
+  ) {
     try {
+      const { uid } = req.userInfo;
       const { hotelId } = req.params;
-      const rooms = await RoomService.findRoomsByHotel(hotelId);
-      return res.status(200).json({
-        msg: 'Find Rooms By Hotel Success',
+      const rooms = await RoomService.findRoomsByHotelOwner(uid, hotelId);
+      return res.status(HttpStatusCode.OK).json({
+        httpStatusCode: HttpStatusCode.OK,
         data: rooms,
       });
     } catch (error) {

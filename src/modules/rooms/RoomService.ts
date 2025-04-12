@@ -194,8 +194,15 @@ class RoomService {
 
     return room;
   }
-  async findRoomsByHotel(hotelId: string) {
-    return await Room.find({ hotel: hotelId });
+  async findRoomsByHotelOwner(uid: string, hotelId: string) {
+    const hotel = await Hotel.findOne({ _id: hotelId, user: uid }).populate("rooms");
+    if (!hotel) {
+      throw new Error(
+        'Hotel not found or you do not have access to this hotel'
+      );
+    }
+
+    return hotel.rooms;
   }
 
   async findRoomById(roomId: string) {

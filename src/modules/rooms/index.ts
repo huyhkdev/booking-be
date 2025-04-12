@@ -31,4 +31,11 @@ RoomRouter.get(
   RoomController.findRoomByRoomIdOwner
 );
 
+RoomRouter.get(
+  '/owner/hotel/:hotelId',
+  authMiddleware,
+  ownerMiddleware,
+  RoomController.findRoomsByHotelOwner
+);
+
 export default RoomRouter;
