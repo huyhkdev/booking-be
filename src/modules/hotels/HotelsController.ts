@@ -16,7 +16,7 @@ class HotelsController {
     try {
       const hotelAll = await HotelsService.findAllHotels();
       return res.status(200).json({
-        msg: 'Find All Hotels Succes',
+        msg: 'Find All Hotels Success',
         data: hotelAll,
       });
     } catch (error) {

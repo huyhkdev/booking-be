@@ -7,6 +7,7 @@ export interface IBooking extends Document {
   checkOutDate: Date;
   totalGuests: number;
   totalPrice: number;
+  transactionID: string;
   status: 'pending' | 'confirmed' | 'cancelled';
   paymentMethod: 'credit_card' | 'cash';
   createdAt: Date;
@@ -29,6 +30,7 @@ const bookingSchema: Schema<IBooking> = new Schema(
       enum: ['pending', 'confirmed', 'cancelled'],
       default: 'pending',
     },
+    transactionID: { type: String },
     paymentMethod: {
       type: String,
       enum: ['credit_card', 'cash'],
