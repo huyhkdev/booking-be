@@ -19,7 +19,6 @@ export interface IHotel extends Document {
   email: string;
   website?: string;
   images: string[];
-  reviews: IReview[];
   latitude: string;
   longitude: string;
   createdAt: Date;
