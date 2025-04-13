@@ -1,14 +1,27 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import { IHotel } from './Hotel';
 
-// Định nghĩa interface cho Room
 export interface IRoom extends Document {
-  hotel: IHotel; // Liên kết đến Hotel
-  roomType: string;
+  hotel: IHotel;
   name: string;
   pricePerNight: number;
-  capacity: number; // Số lượng khách có thể ở
-  amenities: string[]; // Tiện ích của phòng
+  roomNumber: number;
+  capacity: number;
+  amenities: string[];
+  isAvailable: boolean;
+  description?: string;
+  images: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IRoomCreate extends Document {
+  hotel: string;
+  name: string;
+  roomNumber: number;
+  pricePerNight: number;
+  capacity: number;
+  amenities: string[];
   isAvailable: boolean;
   description?: string;
   images: string[];
@@ -24,7 +37,8 @@ const roomSchema: Schema<IRoom> = new Schema(
       ref: 'Hotel',
       required: true,
     }, // Liên kết tới Hotel entity
-    roomType: { type: String, required: true },
+    name: { type: String, required: true },
+    roomNumber: { type: Number, required: true },
     pricePerNight: { type: Number, required: true },
     capacity: { type: Number, required: true },
     amenities: [{ type: String }], // Các tiện ích như máy lạnh, TV, minibar...

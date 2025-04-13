@@ -19,6 +19,9 @@ export interface IHotel extends Document {
   email: string;
   website?: string;
   images: string[];
+  reviews: IReview[];
+  latitude: string;
+  longitude: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,6 +43,8 @@ const hotelSchema: Schema<IHotel> = new Schema(
     phoneNumber: { type: String, required: true },
     email: { type: String, required: true },
     website: { type: String },
+    latitude: { type: String, required: true },
+    longitude: { type: String, required: true },
     images: [{ type: String }],
   },
   {

@@ -5,6 +5,7 @@ import BadRequestException from '@/common/exception/BadRequestException';
 import { IHotel } from '@/databases/entities/Hotel';
 import { RequestCustom, ResponseCustom } from '@/common/interfaces/express';
 import { HttpStatusCode } from '@/common/constants';
+import { getCoordinates } from '@/common/utils/getCoordinate';
 
 class HotelsController {
   async findAllHotel(req: Request, res: Response, next: NextFunction) {
@@ -104,9 +105,12 @@ class HotelsController {
       const hotelData: IHotel = req.body;
       const files = req.files;
       const { uid } = req.userInfo;
+      const { latitude, longitude } = await getCoordinates(req.body.mapLink);
       const imagePaths = Array.isArray(files)
         ? files.map((file: Express.Multer.File) => file.path)
         : [];
+        hotelData.latitude = latitude.toString()
+        hotelData.longitude = longitude.toString()
       const newHotel = await HotelsService.createHotel(
         uid,
         hotelData,
@@ -167,7 +171,11 @@ class HotelsController {
     }
   }
 
-  async deleteHotel(req: RequestCustom, res: ResponseCustom, next: NextFunction) {
+  async deleteHotel(
+    req: RequestCustom,
+    res: ResponseCustom,
+    next: NextFunction
+  ) {
     try {
       const { uid } = req.userInfo;
       const { hotelId } = req.params;
