@@ -12,6 +12,7 @@ export interface IBooking extends Document {
   paymentMethod: 'credit_card' | 'cash';
   createdAt: Date;
   updatedAt: Date;
+  isReview: boolean
 }
 
 // Define the schema for Booking
@@ -25,6 +26,7 @@ const bookingSchema: Schema<IBooking> = new Schema(
     checkOutDate: { type: Date, required: true },
     totalGuests: { type: Number, required: true, min: 1 },
     totalPrice: { type: Number, required: true, min: 0 },
+    isReview: { type: Boolean, default: false },
     status: {
       type: String,
       enum: ['pending', 'confirmed', 'cancelled'],
