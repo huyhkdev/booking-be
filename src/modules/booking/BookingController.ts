@@ -2,24 +2,28 @@ import BadRequestException from '@/common/exception/BadRequestException';
 import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import BookingService from './BookingService';
+import { RequestCustom, ResponseCustom } from '@/common/interfaces/express';
+import { HttpStatusCode } from '@/common/constants';
 
 class BookingController {
-  async createBooking(req: Request, res: Response, next: NextFunction) {
+  async createBooking(req: RequestCustom, res: ResponseCustom, next: NextFunction) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       throw new BadRequestException(errors.array());
     }
+    const {uid} = req.userInfo;
     try {
-      const { room, checkInDate, checkOutDate, paymentMethod } = req.body;
-
+      const { room, checkInDate, checkOutDate, paymentMethod, capacity } = req.body;
       const { paymentUrl } = await BookingService.createBookingSession(
         room,
         checkInDate,
         checkOutDate,
-        paymentMethod
+        paymentMethod,
+        uid,
+        capacity,
       );
       return res.status(200).json({
-        msg: 'Create Success',
+        httpStatusCode: HttpStatusCode.OK,
         data: { paymentUrl },
       });
     } catch (error) {
@@ -47,6 +51,19 @@ class BookingController {
     try {
       await BookingService.removeAll();
       return res.status(200).json({ msg: 'remove all succees' });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
+
+  async getBookingByUid(req: RequestCustom, res: ResponseCustom, next: NextFunction) {
+
+    const { uid } = req.userInfo;
+    try {
+      const data = await BookingService.getBookingByUid(uid);
+      return res.status(200).json({ httpStatusCode: HttpStatusCode.OK, data });
     } catch (error) {
       console.log(error);
       next(error);

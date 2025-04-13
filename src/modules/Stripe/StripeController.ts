@@ -26,45 +26,24 @@ class StripeController {
         const session = event.data.object;
         const { orderData } = session.metadata;
         const parsedOrderData = JSON.parse(orderData);
-        const wallet = await Wallet.findOne({ owner: parsedOrderData.ownerId });
+        const { rooms, checkInDate, checkOutDate, paymentMethod, uid, ownerId, totalAmount, capacity } = parsedOrderData;
+        const wallet = await Wallet.findOne({ owner: ownerId });
         if (!wallet) {
           return;
         }
 
-        const { rooms, checkInDate, checkOutDate, paymentMethod } =
-          parsedOrderData;
 
-        const totalPrice = await Promise.all(
-          rooms.map(
-            async (room: { id: mongoose.Types.ObjectId; quantity: number }) => {
-              const roomDetails = await Room.findById(room.id);
-              if (!roomDetails) {
-                throw new Error(`Room not found for id: ${room.id}`);
-              }
-
-              return roomDetails.pricePerNight * room.quantity;
-            }
-          )
-        );
-
-        const totalGuests = rooms.reduce(
-          (total, room) => total + room.quantity,
-          0
-        );
-        const totalBookingPrice = totalPrice.reduce(
-          (sum, price) => sum + price,
-          0
-        );
         await BookingService.createBooking(
           rooms.map((room) => room.id),
-          totalBookingPrice,
-          totalGuests,
+          totalAmount,
+          capacity,
           new Date(checkInDate),
           new Date(checkOutDate),
           paymentMethod,
-          session.payment_intent
+          session.payment_intent,
+          uid
         );
-        const ownerAmount = (totalBookingPrice / 100) * 90;
+        const ownerAmount = (totalAmount / 100) * 90;
         wallet.balance += ownerAmount;
 
         await wallet.save();

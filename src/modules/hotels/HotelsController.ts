@@ -39,10 +39,11 @@ class HotelsController {
   async findHotelById(req: Request, res: Response, next: NextFunction) {
     try {
       const { hotelId } = req.params;
-      const { checkInDate } = req.query;
+      const { checkInDate,checkOutDate } = req.query;
       const hotels = await HotelsService.findHotelById(
         hotelId,
-        checkInDate as string
+        checkInDate as string,
+        checkOutDate as string
       );
       return res.status(200).json({
         msg: 'Find Hotel By Id Success',
