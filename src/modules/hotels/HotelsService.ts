@@ -2,6 +2,7 @@ import ErrorCode from '@/common/constants/errorCode';
 import BadRequestException from '@/common/exception/BadRequestException';
 import Booking from '@/databases/entities/Booking';
 import Hotel, { IHotel } from '@/databases/entities/Hotel';
+import Review from '@/databases/entities/Review';
 import Room from '@/databases/entities/Room';
 import { User } from '@/databases/entities/User';
 import mongoose from 'mongoose';
@@ -13,24 +14,33 @@ class HotelsService {
   async findAllHotelByCity(city: string) {
     return Hotel.find({ city });
   }
-  async findHotelById(hotelId: string, checkInDate: string) {
+  async findHotelById(hotelId: string, checkInDate: string, checkOutDate: string) {
     const hotel = await Hotel.findById(hotelId);
     if (!hotel) {
       throw new Error('Hotel not found');
     }
+    const reviews = await Review.find({ hotel: hotel._id }).populate("user");
+
+    const checkIn = new Date(checkInDate);
+    const checkOut = new Date(checkOutDate);
+
+    // Tìm các booking có giao với khoảng ngày muốn đặt
     const bookingRooms = await Booking.find({
-      checkOutDate: { $gte: new Date(checkInDate) },
+      checkInDate: { $lt: checkOut },
+      checkOutDate: { $gt: checkIn },
     }).select('room');
-    const bookingRoomId = bookingRooms.flatMap(
-      (bookingRoom) => bookingRoom.room
-    );
-    const availableRoom = await Room.find({
+
+    const bookingRoomId = bookingRooms.flatMap((b) => b.room);
+
+    const availableRooms = await Room.find({
       hotel: hotelId,
       _id: { $nin: bookingRoomId },
     });
+
     return {
       ...hotel.toObject(),
-      rooms: availableRoom,
+      reviews,
+      rooms: availableRooms,
     };
   }
   async findHotelsByOwnerId(ownerId: string) {
@@ -73,13 +83,13 @@ class HotelsService {
     return updatedHotel;
   }
 
-  async deleteHotel(uid:string, hotelId: string) {
+  async deleteHotel(uid: string, hotelId: string) {
     const hotel = await Hotel.findOne({ _id: hotelId, user: uid });
     if (!hotel) {
       throw new Error('Hotel not found or you do not have access to this hotel');
     }
     const deleteHotel = await Hotel.findByIdAndDelete(hotelId);
-    
+
     await Room.deleteMany({ hotel: hotelId });
 
     return deleteHotel;

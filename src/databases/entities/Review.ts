@@ -7,7 +7,6 @@ export interface IReview extends Document {
   hotel: IHotel;
   rating: number; // Đánh giá từ 1-5 sao
   comment: string;
-  imgUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,8 +21,7 @@ const reviewSchema: Schema<IReview> = new Schema(
       required: true,
     }, // Liên kết tới phòng
     rating: { type: Number, required: true, min: 1, max: 5 }, // Giới hạn đánh giá từ 1 đến 5 sao
-    comment: { type: String, required: true },
-    imgUrl: { type: String },
+    comment: { type: String, required: true }
   },
   {
     timestamps: true,

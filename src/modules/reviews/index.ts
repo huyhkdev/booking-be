@@ -1,17 +1,10 @@
 import { Router } from 'express';
 import reviewController from './reviewController';
-import uploadCloud from '@/utils/upload';
+import { authMiddleware } from '@/common/middlewares';
 
 export const ReviewRouter = Router();
 ReviewRouter.post(
-  '/createReview/:roomId',
-  uploadCloud.single('imgUrl'),
-  reviewController.CreateReview
+  '/createReview/:bookingId',
+  authMiddleware,
+  reviewController.createReview
 );
-ReviewRouter.put(
-  '/editReview/:reviewId',
-  uploadCloud.single('imgUrl'),
-  reviewController.EditReview
-);
-ReviewRouter.delete('/deleteReview/:reviewId', reviewController.DeleteReview);
-ReviewRouter.get('/allReview', reviewController.ReviewAll);

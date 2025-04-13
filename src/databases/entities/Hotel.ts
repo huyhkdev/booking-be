@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { IReview } from './Review';
+
 
 // Định nghĩa interface cho Hotel
 export interface IHotel extends Document {

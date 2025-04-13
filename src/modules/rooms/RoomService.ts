@@ -7,15 +7,15 @@ import { User } from '@/databases/entities/User';
 import mongoose from 'mongoose';
 
 class RoomService {
-  private async findRoomByDate(checkInDate: Date) {
+  private async findRoomByDateRange(checkInDate: Date, checkOutDate: Date) {
     const bookingRooms = await Booking.find({
-      checkOutDate: { $gte: checkInDate },
+      checkInDate: { $lt: checkOutDate },
+      checkOutDate: { $gt: checkInDate },
     }).select('room');
-    const bookingRoomId = bookingRooms.flatMap(
-      (bookingRoom) => bookingRoom.room
-    );
-    const availableRoom = await Room.find({ _id: { $nin: bookingRoomId } });
-    return availableRoom;
+  
+    const bookingRoomId = bookingRooms.flatMap((b) => b.room);
+    const availableRooms = await Room.find({ _id: { $nin: bookingRoomId } });
+    return availableRooms;
   }
   private async findRoomsByCity(filteredRoomByDate: any[], city: string) {
     const populatedFilteredRooms = await Room.populate(filteredRoomByDate, {
@@ -74,7 +74,7 @@ class RoomService {
     roomType: string,
     amenities: string[]
   ) {
-    const filteredRoomByDate = await this.findRoomByDate(new Date(checkInDate));
+    const filteredRoomByDate = await this.findRoomByDateRange(new Date(checkInDate), new Date(checkOutDate));
     const roomsGroupedByHotel = await this.findRoomsByCity(
       filteredRoomByDate,
       city

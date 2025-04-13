@@ -15,7 +15,9 @@ class BookingService {
     }>,
     checkInDate: Date,
     checkOutDate: Date,
-    paymentMethod: string
+    paymentMethod: string,
+    uid: string,
+    capacity: string
   ) {
     const stripe = new Stripe(config.stripeSecret);
     let orderData = {
@@ -23,7 +25,10 @@ class BookingService {
       checkInDate,
       checkOutDate,
       paymentMethod,
+      uid,
       ownerId: "",
+      totalAmount: 0,
+      capacity
     };
     const roomDetails = await Room.find({
       _id: { $in: rooms.map((room) => room.id) },
@@ -36,6 +41,7 @@ class BookingService {
     orderData = { ...orderData, ownerId: hotel.user.toString() };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let totalAmount = 0;
+
     const lineItems = rooms.map((room) => {
       const roomDetail = roomDetails.find((detail: any) =>
         detail._id.equals(room.id)
@@ -57,7 +63,7 @@ class BookingService {
         quantity: room.quantity,
       };
     });
-
+      orderData = {...orderData, totalAmount}
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       metadata: {
@@ -79,7 +85,8 @@ class BookingService {
     checkInDate: Date,
     checkOutDate: Date,
     paymentMethod: string,
-    transactionID: string
+    transactionID: string,
+    uid: string,
   ): Promise<IBooking> {
     const booking = new Booking({
       room: rooms,
@@ -89,6 +96,7 @@ class BookingService {
       checkOutDate,
       paymentMethod,
       status: 'confirmed',
+      user: uid,
       transactionID,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -104,6 +112,17 @@ class BookingService {
   async removeAll() {
     const result = await Booking.deleteMany({});
     return result;
+  }
+
+  async getBookingByUid(uid: string) {
+    return await Booking.find({ user: uid })
+    .populate({
+      path: 'room',
+      populate: {
+        path: 'hotel',
+        model: 'Hotel'
+      }
+    });
   }
 }
 
