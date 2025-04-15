@@ -57,7 +57,6 @@ class ConfigService {
     return this.getEnv('MONGO_URL');
   }
 
-
   get apiUrl(): string {
     return this.getEnv('API_URL');
   }
@@ -73,7 +72,10 @@ class ConfigService {
     return this.getEnv('STRIPE_ACCOUNT_RETURN_URL');
   }
 
-  
+  get grokApiKey(): string {
+    return this.getEnv('GROK_API_KEY');
+  }
+
 }
 const config = new ConfigService();
 export default config;
