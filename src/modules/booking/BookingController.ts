@@ -69,5 +69,48 @@ class BookingController {
       next(error);
     }
   }
+
+  async getBookingsByHotelId(req: RequestCustom, res: ResponseCustom, next: NextFunction) {
+    try {
+      const { hotelId } = req.params;
+      const { uid } = req.userInfo;
+      const data = await BookingService.getBookingsByHotelId(hotelId, uid);
+      return res.status(200).json({
+        httpStatusCode: HttpStatusCode.OK,
+        data
+      });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
+  async getTotalRevenue(req: RequestCustom, res: ResponseCustom, next: NextFunction) {
+    try {
+      const { uid } = req.userInfo;
+      const data = await BookingService.getTotalRevenueByOwner(uid);
+      return res.status(200).json({
+        httpStatusCode: HttpStatusCode.OK,
+        data
+      });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
+  async getRevenueStatistics(req: RequestCustom, res: ResponseCustom, next: NextFunction) {
+    try {
+      const { uid } = req.userInfo;
+      const data = await BookingService.getRevenueStatisticsByOwner(uid);
+      return res.status(200).json({
+        httpStatusCode: HttpStatusCode.OK,
+        data
+      });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
 }
 export default new BookingController();
