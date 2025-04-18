@@ -21,5 +21,6 @@ export interface ENV {
   API_URL: string | undefined;
   STRIPE_ACCOUNT_RETURN_URL: string | undefined;
   DEEP_SEEK_API_KEY: string | undefined;
+  GROK_API_KEY: string | undefined;
 
 }

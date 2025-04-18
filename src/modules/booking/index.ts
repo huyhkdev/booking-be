@@ -8,4 +8,7 @@ BookingRouter.get('/allOrder', BookingController.getAllOrders);
 BookingRouter.delete('/removeAll', BookingController.removeAllOrders);
 BookingRouter.delete('/removeAll', BookingController.removeAllOrders);
 BookingRouter.get('/user-bookings',authMiddleware,  BookingController.getBookingByUid);
+BookingRouter.get('/hotel/:hotelId', authMiddleware, BookingController.getBookingsByHotelId);
+BookingRouter.get('/revenue', authMiddleware, BookingController.getTotalRevenue);
+BookingRouter.get('/statistics', authMiddleware, BookingController.getRevenueStatistics);
 export default BookingRouter;
