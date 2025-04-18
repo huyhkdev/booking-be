@@ -1,5 +1,6 @@
 import { adminMiddleware, authMiddleware } from '@/common/middlewares';
 import { adminRouter } from '@/modules/admin';
+import chatRouter from '@/modules/ai';
 import BookingRouter from '@/modules/booking';
 import HotelsRouter from '@/modules/hotels';
 import OwnerRouter from '@/modules/owner';
@@ -16,5 +17,6 @@ router.use('/user', UserRouter);
 router.use('/review', ReviewRouter);
 router.use('/owner', OwnerRouter);
 router.use('/admin', adminRouter);
+router.use('/ai', chatRouter);
 
 export default router;

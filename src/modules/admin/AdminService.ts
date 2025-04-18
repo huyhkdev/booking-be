@@ -49,7 +49,7 @@ class AdminService {
             const accountLink = await stripe.accountLinks.create({
                 account: accountId,
                 refresh_url: 'https://example.com/reauth',
-                return_url: `${config.striptAccountReturnUrl}/profile`,
+                return_url: `${config.striptAccountReturnUrl}`,
                 type: 'account_onboarding',
             });
 

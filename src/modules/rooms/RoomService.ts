@@ -2,6 +2,7 @@ import ErrorCode from '@/common/constants/errorCode';
 import BadRequestException from '@/common/exception/BadRequestException';
 import Booking from '@/databases/entities/Booking';
 import Hotel from '@/databases/entities/Hotel';
+import Review from '@/databases/entities/Review';
 import Room, { IRoom, IRoomCreate } from '@/databases/entities/Room';
 import { User } from '@/databases/entities/User';
 import mongoose from 'mongoose';
@@ -12,7 +13,7 @@ class RoomService {
       checkInDate: { $lt: checkOutDate },
       checkOutDate: { $gt: checkInDate },
     }).select('room');
-  
+
     const bookingRoomId = bookingRooms.flatMap((b) => b.room);
     const availableRooms = await Room.find({ _id: { $nin: bookingRoomId } });
     return availableRooms;
@@ -95,9 +96,19 @@ class RoomService {
       );
     }
     if (rating) {
-      roomResult = roomResult.filter((item) =>
-        rating.includes(String(item.hotel.rating))
+      const filteredRoomResult = await Promise.all(
+        roomResult.map(async (item) => {
+          const hotelReviews = await Review.find({ hotel: item.hotel._id });
+          const averageRating = hotelReviews.length
+            ? hotelReviews.reduce((sum, r) => sum + r.rating, 0) / hotelReviews.length
+            : 0;
+    
+          const matched = rating.includes(String(averageRating));
+          return matched ? item : null;
+        })
       );
+    
+      roomResult = filteredRoomResult.filter(item => item !== null);
     }
     if (amenities) {
       roomResult = roomResult.filter((item) =>
@@ -134,9 +145,14 @@ class RoomService {
       {}
     );
     const finalResult = Object.values(uniqueRoomsByHotel).flat();
+    const combimeReviewsResult = await Promise.all(finalResult.map(async item => {
+      const hotelId = item.hotel.id;
+      const reviews = await Review.find({ hotel: hotelId }).lean();
+      return { ...item.toObject(), reviews }
+    }))
     return {
-      rooms: finalResult.slice(startIndex, endIndex),
-      total: finalResult.length,
+      rooms: combimeReviewsResult.slice(startIndex, endIndex),
+      total: combimeReviewsResult.length,
     };
   }
 
