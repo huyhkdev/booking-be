@@ -72,6 +72,11 @@ class ConfigService {
     return this.getEnv('STRIPE_ACCOUNT_RETURN_URL');
   }
 
+  get deepSeekApiKey(): string {
+    return this.getEnv('DEEP_SEEK_API_KEY');
+  }
+  
+  
   get grokApiKey(): string {
     return this.getEnv('GROK_API_KEY');
   }
