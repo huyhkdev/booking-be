@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import reviewController from './reviewController';
+import ReviewController from './ReviewController';
 import { authMiddleware } from '@/common/middlewares';
 
-export const ReviewRouter = Router();
-ReviewRouter.post(
-  '/createReview/:bookingId',
-  authMiddleware,
-  reviewController.createReview
-);
+const ReviewRouter = Router();
+
+ReviewRouter.post('/create', authMiddleware, ReviewController.createReview);
+ReviewRouter.get('/owner', authMiddleware, ReviewController.getReviewsByOwner);
+
+export default ReviewRouter;

@@ -16,9 +16,6 @@ userRouter.post('/reset-password', resetPasswordMiddleware, userController.reset
 userRouter.get('/refresh-token', refreshTokenMiddleware, userController.refreshToken);
 userRouter.post('/change-password', authMiddleware, userController.changePassword);
 
-userRouter.post('/admin/block', authMiddleware, adminMiddleware, userController.blockUsers);
-userRouter.post('/admin/un-block', authMiddleware, adminMiddleware, userController.unblockUsers);
-
 userRouter.post('/login-google', firebaseMiddleware, userController.loginGoogle); // request to get verify email
 userRouter.post('/change-avatar',authMiddleware, uploadCloud.single('image'), userController.changeAvatar )
 

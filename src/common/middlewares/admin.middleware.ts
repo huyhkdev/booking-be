@@ -1,4 +1,4 @@
-import { Request, NextFunction, Response } from "express";
+import { NextFunction } from "express";
 
 import { RequestCustom, ResponseCustom } from "../interfaces/express";
 import ForbiddenException from "../exception/ForbiddenException";

@@ -115,33 +115,6 @@ class UserService {
     await user.save();
   }
 
-  async blockUsers(uids: string[]) {
-    const users = await User.find({ _id: { $in: uids } });
-    if (!users.length) {
-      throw new BadRequestException({
-        errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: 'No users found',
-      });
-    }
-
-    await User.updateMany(
-      { _id: { $in: uids } },
-      { $set: { role: 'blocker' } }
-    );
-  }
-
-  async unblockUsers(uids: string[]) {
-    const users = await User.find({ _id: { $in: uids } });
-    if (!users.length) {
-      throw new BadRequestException({
-        errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: 'No users found',
-      });
-    }
-
-    await User.updateMany({ _id: { $in: uids } }, { $set: { role: 'user' } });
-  }
-
   async toggleNotification(uid: string) {
     const user = await User.findById(uid);
     if (!user) {

@@ -317,25 +317,6 @@ class UserController {
     }
   }
 
-  // admin method
-  async blockUsers(
-    request: RequestCustom,
-    response: ResponseCustom,
-    next: NextFunction
-  ) {
-    try {
-      const { uids } = request.body;
-      await userService.blockUsers(uids);
-      return response
-        .status(HttpStatusCode.OK)
-        .json({ httpStatusCode: HttpStatusCode.OK });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-
-
   async updateProfile(
     request: RequestCustom,
     response: ResponseCustom,
@@ -373,23 +354,5 @@ class UserController {
       next(error);
     }
   }
-
-
-  async unblockUsers(
-    request: RequestCustom,
-    response: ResponseCustom,
-    next: NextFunction
-  ) {
-    try {
-      const { uids } = request.body;
-      await userService.unblockUsers(uids);
-      return response
-        .status(HttpStatusCode.OK)
-        .json({ httpStatusCode: HttpStatusCode.OK });
-    } catch (error) {
-      next(error);
-    }
-  }
-
 }
 export default new UserController();
