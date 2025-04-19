@@ -144,7 +144,7 @@ class RoomService {
     const hotel = await Hotel.findById(roomData.hotel);
     if (!hotel) {
       throw new Error(
-        'Hotel not found or you do not have access to this hotel'
+        'Không tìm thấy khách sạn hoặc bạn không có quyền truy cập vào khách sạn này'
       );
     }
     const room = new Room(roomData);
@@ -168,19 +168,19 @@ class RoomService {
     if (!user || user.role === 'blocker') {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: 'Not found user',
+        errorMessage: 'Không tìm thấy người dùng',
       });
     }
     const roomCheck = await Room.findById(roomId);
     if (!roomCheck) {
-      throw new Error('Room not found');
+      throw new Error('Không tìm thấy phòng');
     }
     const hotelCheck = await Hotel.findOne({
       user: ownerId,
       rooms: roomCheck._id,
     });
     if (!hotelCheck) {
-      throw new Error('Unauthorized access');
+      throw new Error('Không tìm thấy khách sạn hoặc bạn không có quyền truy cập vào khách sạn này');
     }
     const room = await Room.findByIdAndUpdate(roomId, updateData, {
       new: true,
@@ -193,10 +193,10 @@ class RoomService {
     const hotel = await Hotel.findOne({ user: uid, rooms: roomId });
     const room = await Room.findByIdAndDelete(roomId);
     if (!room) {
-      throw new Error('Room not found');
+      throw new Error('Không tìm thấy phòng');
     }
     if (!hotel) {
-      throw new Error('Unauthorized access');
+      throw new Error('Không tìm thấy khách sạn hoặc bạn không có quyền truy cập vào khách sạn này');
     }
     hotel.rooms = hotel.rooms.filter(
       (roomIdInArray) => roomIdInArray.toString() !== roomId
@@ -208,10 +208,10 @@ class RoomService {
   async findRoomByRoomIdOwner(roomId: string, ownerId: string) {
     const room = await Room.findOne({ _id: roomId });
     if (!room) {
-      throw new Error('Room not found');
+      throw new Error('Không tìm thấy phòng');
     }
     if (room.hotel.user.toString() !== ownerId) {
-      throw new Error('Unauthorized access');
+      throw new Error('Không tìm thấy khách sạn hoặc bạn không có quyền truy cập vào khách sạn này');
     }
 
     return room;
@@ -222,7 +222,7 @@ class RoomService {
     );
     if (!hotel) {
       throw new Error(
-        'Hotel not found or you do not have access to this hotel'
+        'Không tìm thấy khách sạn hoặc bạn không có quyền truy cập vào khách sạn này'
       );
     }
 
@@ -232,7 +232,7 @@ class RoomService {
   async findRoomById(roomId: string) {
     const room = await Room.findById(roomId);
     if (!room) {
-      throw new Error('Room not found');
+      throw new Error('Không tìm thấy phòng');
     }
     return room;
   }

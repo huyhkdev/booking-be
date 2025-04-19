@@ -14,7 +14,7 @@ class OwnerService {
     if (!user || user.role === 'blocker') {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: 'Not found user',
+        errorMessage: 'Không tìm thấy người dùng',
       });
     }
     const newOwner = HotelOwnerRegister.build({

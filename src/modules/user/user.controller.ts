@@ -81,7 +81,7 @@ class UserController {
       if (!encryptEmail) {
         throw new BadRequestException({
           errorCode: ErrorCode.FAILED_VALIDATE_BODY,
-          errorMessage: 'Invalid verification',
+          errorMessage: 'Lỗi xác thực',
         });
       }
       await userService.verifyEmail(encryptEmail);
@@ -104,14 +104,14 @@ class UserController {
       if (!email) {
         throw new BadRequestException({
           errorCode: ErrorCode.FAILED_VALIDATE_BODY,
-          errorMessage: 'Email is required',
+          errorMessage: 'Email là bắt buộc',
         });
       }
       const userExist = await userService.findUserByEmail(email);
       if (!userExist || userExist.state === 'active') {
         throw new BadRequestException({
           errorCode: ErrorCode.NOT_FOUND,
-          errorMessage: 'Not found unverify user',
+          errorMessage: 'Không tìm thấy người dùng chưa xác thực',
         });
       }
       sendVerifyLink(response, email, 'verify');
@@ -148,7 +148,7 @@ class UserController {
       if (!user)
         throw new BadRequestException({
           errorCode: ErrorCode.NOT_FOUND,
-          errorMessage: 'User not found',
+          errorMessage: 'Không tìm thấy người dùng',
         });
 
       const {
@@ -191,7 +191,7 @@ class UserController {
       if (!userExist) {
         throw new BadRequestException({
           errorCode: ErrorCode.NOT_FOUND,
-          errorMessage: 'Not found user',
+          errorMessage: 'Không tìm thấy người dùng',
         });
       }
       sendVerifyLink(
@@ -227,7 +227,7 @@ class UserController {
           errors: [
             {
               errorCode: ErrorCode.TOKEN_EXPIRED,
-              errorMessage: 'Your token is expired',
+              errorMessage: 'Token của bạn đã hết hạn',
             },
           ],
         });
@@ -247,7 +247,7 @@ class UserController {
       if (!userExist) {
         throw new BadRequestException({
           errorCode: ErrorCode.NOT_FOUND,
-          errorMessage: 'Not found user',
+          errorMessage: 'Không tìm thấy người dùng',
         });
       }
       const accessToken = Jwt.generateAccessToken(userExist.id, userExist.role);
@@ -270,14 +270,14 @@ class UserController {
       if (!newPassword) {
         throw new BadRequestException({
           errorCode: ErrorCode.FAILED_VALIDATE_BODY,
-          errorMessage: 'New password is require',
+          errorMessage: 'Mật khẩu mới là bắt buộc',
         });
       }
       const userExist = await userService.findUserById(uid);
       if (!userExist) {
         throw new BadRequestException({
           errorCode: ErrorCode.NOT_FOUND,
-          errorMessage: 'Not found user',
+          errorMessage: 'Không tìm thấy người dùng',
         });
       }
       const isPasswordMatch = await hashing.comparePassword(
@@ -287,7 +287,7 @@ class UserController {
       if (!isPasswordMatch) {
         throw new BadRequestException({
           errorCode: ErrorCode.NOT_FOUND,
-          errorMessage: 'Old password is wrong',
+          errorMessage: 'Mật khẩu cũ không đúng',
         });
       }
 
