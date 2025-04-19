@@ -50,7 +50,7 @@ class BookingController {
     }
     try {
       await BookingService.removeAll();
-      return res.status(200).json({ msg: 'remove all succees' });
+      return res.status(200).json({ msg: 'Xóa tất cả đơn hàng thành công' });
     } catch (error) {
       console.log(error);
       next(error);

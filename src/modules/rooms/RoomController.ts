@@ -42,7 +42,7 @@ class RoomController {
         amenities as string[]
       );
       return res.status(200).json({
-        msg: 'Find Rooms Success',
+        msg: 'Tìm kiếm phòng thành công',
         ...rooms,
       });
     } catch (error) {
@@ -75,7 +75,7 @@ class RoomController {
       if (!hotel) {
         return res.status(HttpStatusCode.NOT_FOUND).json({
           httpStatusCode: HttpStatusCode.NOT_FOUND,
-          data: 'Hotel not found',
+          data: 'Không tìm thấy khách sạn',
         });
       }
       const newRoom = await RoomService.createRoom(roomData, imagePaths);
@@ -191,7 +191,7 @@ class RoomController {
       const { roomId } = req.params;
       const room = await RoomService.findRoomById(roomId);
       return res.status(200).json({
-        msg: 'Find Room By Id Success',
+        msg: 'Tìm kiếm phòng thành công',
         data: room,
       });
     } catch (error) {

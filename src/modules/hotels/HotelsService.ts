@@ -17,7 +17,7 @@ class HotelsService {
   async findHotelById(hotelId: string, checkInDate: string, checkOutDate: string) {
     const hotel = await Hotel.findById(hotelId);
     if (!hotel) {
-      throw new Error('Hotel not found');
+      throw new Error('Không tìm thấy khách sạn');
     }
     const reviews = await Review.find({ hotel: hotel._id }).populate("user");
 
@@ -51,7 +51,7 @@ class HotelsService {
     const hotel = await Hotel.findOne({ _id: hotelId, user: ownerId }).populate("rooms");
     if (!hotel) {
       throw new Error(
-        'Hotel not found or you do not have access to this hotel'
+        'Không tìm thấy khách sạn hoặc bạn không có quyền truy cập vào khách sạn này'
       );
     }
     return hotel;
@@ -62,7 +62,7 @@ class HotelsService {
     if (!user || user.role === 'blocker') {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: 'Not found user',
+        errorMessage: 'Không tìm thấy người dùng',
       });
     }
     const hotel = new Hotel(hotelData);
@@ -75,7 +75,7 @@ class HotelsService {
   async updateHotel(uid: string, hotelId: string, updateData: Partial<IHotel>) {
     const hotel = await Hotel.findOne({ _id: hotelId, user: uid });
     if (!hotel) {
-      throw new Error('Hotel not found or you do not have access to this hotel');
+      throw new Error('Không tìm thấy khách sạn hoặc bạn không có quyền truy cập vào khách sạn này');
     }
     const updatedHotel = await Hotel.findByIdAndUpdate(hotelId, updateData, {
       new: true,
@@ -86,7 +86,7 @@ class HotelsService {
   async deleteHotel(uid: string, hotelId: string) {
     const hotel = await Hotel.findOne({ _id: hotelId, user: uid });
     if (!hotel) {
-      throw new Error('Hotel not found or you do not have access to this hotel');
+      throw new Error('Không tìm thấy khách sạn hoặc bạn không có quyền truy cập vào khách sạn này');
     }
     const deleteHotel = await Hotel.findByIdAndDelete(hotelId);
 

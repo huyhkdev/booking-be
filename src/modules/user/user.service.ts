@@ -5,8 +5,6 @@ import UnauthorizedExeption from '@/common/exception/UnauthorizedExeption';
 import hashing from '@/common/utils/hashing';
 import Jwt from '@/common/utils/Jwt';
 import { User } from '@/databases/entities/User';
-import { HotelOwnerRegister } from '@/databases/entities/HotelOwnerRegister';
-import { ObjectId } from 'mongoose';
 
 class UserService {
   async createActiveUser(fullName: string, email: string, picture: string) {
@@ -22,7 +20,7 @@ class UserService {
     if (userExist) {
       throw new BadRequestException({
         errorCode: ErrorCode.EXIST,
-        errorMessage: 'Email has been registered',
+        errorMessage: 'Email đã được đăng ký',
       });
     }
     const hashedPassword = await hashing.hashPassword(password);
@@ -41,7 +39,7 @@ class UserService {
     if (!userExist) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: 'Not found user',
+        errorMessage: 'Không tìm thấy người dùng',
       });
     }
     userExist.state = 'active';
@@ -52,19 +50,19 @@ class UserService {
     if (!user) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: 'Not found user with this email',
+        errorMessage: 'Không tìm thấy người dùng với email này',
       });
     }
     if (user.role == 'blocker') {
       throw new ForbiddenException({
         errorCode: ErrorCode.BLOCKED,
-        errorMessage: 'You are blocked',
+        errorMessage: 'Bạn đã bị chặn',
       });
     }
     if (user.state !== 'active') {
       throw new BadRequestException({
         errorCode: ErrorCode.VERIFY_EMAIL_NEED,
-        errorMessage: 'You need to verify email',
+        errorMessage: 'Bạn cần xác thực email',
       });
     }
 
@@ -75,7 +73,7 @@ class UserService {
     if (!isCorrectPassword)
       throw new UnauthorizedExeption({
         errorCode: ErrorCode.INCORRECT,
-        errorMessage: 'Incorrect password',
+        errorMessage: 'Mật khẩu không đúng',
       });
     const accessToken = Jwt.generateAccessToken(user.id, user.role);
     const refreshToken = Jwt.generateRefreshToken(user.id);
@@ -96,7 +94,7 @@ class UserService {
     if (!user) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: 'Not found user',
+        errorMessage: 'Không tìm thấy người dùng',
       });
     }
     user.password = hashedPassword;
@@ -108,7 +106,7 @@ class UserService {
     if (!user) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: 'Not found user',
+        errorMessage: 'Không tìm thấy người dùng',
       });
     }
     user.role = 'blocker';
@@ -120,7 +118,7 @@ class UserService {
     if (!user) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: 'Not found user',
+        errorMessage: 'Không tìm thấy người dùng',
       });
     }
     await user.save();
@@ -131,7 +129,7 @@ class UserService {
     if (!users.length) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: 'No users found',
+        errorMessage: 'Không tìm thấy người dùng',
       });
     }
     return users;

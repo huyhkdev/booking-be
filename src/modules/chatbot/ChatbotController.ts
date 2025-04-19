@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { RequestCustom, ResponseCustom } from '@/common/interfaces/express';
 import ChatbotService from './ChatbotService';
 import { HttpStatusCode } from '@/common/constants';
+import ErrorCode from '@/common/constants/errorCode';
 
 class ChatbotController {
   async chat(req: RequestCustom, res: ResponseCustom, next: NextFunction) {
@@ -11,8 +12,8 @@ class ChatbotController {
         return res.status(400).json({
           httpStatusCode: HttpStatusCode.BAD_REQUEST,
           errors: [{
-            errorCode: 'MESSAGE_REQUIRED',
-            errorMessage: 'Message is required'
+            errorCode: ErrorCode.FAILED_VALIDATE_BODY,
+            errorMessage: "Không tìm thấy tin nhắn"
           }]
         });
       }

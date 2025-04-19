@@ -397,7 +397,7 @@ class AdminService {
     if (!users.length) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: 'No users found',
+        errorMessage: 'Không tìm thấy người dùng',
       });
     }
 
@@ -412,7 +412,7 @@ class AdminService {
     if (!users.length) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
-        errorMessage: 'No users found',
+        errorMessage: 'Không tìm thấy người dùng',
       });
     }
 

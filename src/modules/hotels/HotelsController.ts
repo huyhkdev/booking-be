@@ -29,7 +29,7 @@ class HotelsController {
       const { city } = req.body;
       const hotel = await HotelsService.findAllHotelByCity(city);
       return res.status(200).json({
-        msg: 'Find Hotel By City Success',
+        msg: 'Tìm kiếm khách sạn theo thành phố thành công',
         data: hotel,
       });
     } catch (error) {
@@ -47,7 +47,7 @@ class HotelsController {
         checkOutDate as string
       );
       return res.status(200).json({
-        msg: 'Find Hotel By Id Success',
+        msg: 'Tìm kiếm khách sạn thành công',
         data: hotels,
       });
     } catch (error) {
