@@ -32,7 +32,6 @@ const hotelSchema: Schema<IHotel> = new Schema(
     address: { type: String, required: true },
     city: { type: String, required: true },
     country: { type: String, required: true },
-    rating: { type: Number, min: 0, max: 5 },
     star: { type: Number, min: 0, max: 5 },
     description: { type: String },
     longDescription: { type: String },
