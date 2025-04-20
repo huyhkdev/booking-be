@@ -17,77 +17,6 @@ import Room from '@/databases/entities/Room';
 import mongoose from 'mongoose';
 
 class AdminService {
-    async acceptExpertRequest(requestId: string) {
-        const request = await HotelOwnerRegister.findById(requestId);
-        if (!request) {
-            throw new BadRequestException({
-                errorCode: "",
-                errorMessage: "Không tìm thấy yêu cầu"
-            })
-        }
-        const userId = request.user;
-        const user = await User.findById(userId);
-        if (!user) {
-            throw new BadRequestException({
-                errorCode: "",
-                errorMessage: "Không tìm thấy người dùng"
-            })
-        }
-        let accountId = '';
-        const stripe = new Stripe(config.stripeSecret);
-        try {
-            const account = await stripe.accounts.create({
-                type: 'express',
-                country: 'US',
-                email: user.email,
-            });
-
-            accountId = account.id;
-            const wallet = new Wallet({ owner: userId, connectedId: account.id });
-            await wallet.save();
-
-        } catch (e) {
-            console.log(e);
-            throw new ServerInternalException({
-                errorCode: "",
-                errorMessage: "Lỗi tạo ví"
-            })
-        }
-
-        try {
-            const accountLink = await stripe.accountLinks.create({
-                account: accountId,
-                refresh_url: 'https://example.com/reauth',
-                return_url: `${config.striptAccountReturnUrl}`,
-                type: 'account_onboarding',
-            });
-
-            try {
-                sendTextEmail({
-                    email: user.email,
-                    subject: "Hoàn tất thông tin ví của bạn",
-                    text: `Nhấn vào đây để hoàn tất thông tin ví của bạn: ${accountLink.url}`
-                })
-                request.status = 'approved';
-                await request.save();
-
-                user.role = 'owner';
-                await user.save();
-
-            } catch (e) {
-                throw new ServerInternalException({
-                    errorCode: "",
-                    errorMessage: "Lỗi gửi email"
-                })
-            }
-
-        } catch (e) {
-            console.log(e);
-            throw new ServerInternalException({
-                errorCode: "",
-                errorMessage: "Lỗi tạo ví"
-            })
-        }
   // Admin authentication
   async login(email: string, password: string) {
     const user = await User.findOne({ email, role: 'admin' });
@@ -241,9 +170,7 @@ class AdminService {
 
   // Booking Management
   async getAllBookings() {
-    return await Booking.find()
-      .populate('user')
-      .populate('room');
+    return await Booking.find().populate('user').populate('room');
   }
 
   // Review Management
@@ -297,10 +224,13 @@ class AdminService {
 
         const bookings = await Booking.find({
           createdAt: { $gte: startOfMonth, $lte: endOfMonth },
-          status: 'confirmed'
+          status: 'confirmed',
         });
 
-        const revenue = bookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
+        const revenue = bookings.reduce(
+          (sum, booking) => sum + (booking.totalPrice || 0),
+          0
+        );
 
         return {
           month: date.toLocaleString('default', {
@@ -308,7 +238,7 @@ class AdminService {
             year: 'numeric',
           }),
           revenue: Number(revenue.toFixed(2)),
-          bookings: bookings.length
+          bookings: bookings.length,
         };
       })
     );
@@ -316,7 +246,7 @@ class AdminService {
     // Total revenue
     const totalRevenue = await Booking.aggregate([
       { $match: { status: 'completed' } },
-      { $group: { _id: null, total: { $sum: '$totalPrice' } } }
+      { $group: { _id: null, total: { $sum: '$totalPrice' } } },
     ]);
 
     // Booking statistics by time
@@ -427,8 +357,8 @@ class AdminService {
   }
 
   async getOwnerRequestById(requestId: string) {
-    const request = await HotelOwnerRegister.findById(requestId)
-      .populate('user');
+    const request =
+      await HotelOwnerRegister.findById(requestId).populate('user');
     if (!request) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
@@ -440,27 +370,32 @@ class AdminService {
 
   // Owner Management
   async getAllOwners() {
-    const owners = await User.find({ role: 'owner' })
-      .select('-password');
-    const hotels = await Hotel.find({ user: { $in: owners.map(owner => owner._id) } });
-    
-    return owners.map(owner => {
-      const ownerHotels = hotels.filter(hotel => hotel.user.equals(owner._id as mongoose.Types.ObjectId));
-      const averageRating = ownerHotels.length > 0 
-        ? ownerHotels.reduce((sum, hotel) => sum + (hotel.rating || 0), 0) / ownerHotels.length 
-        : 0;
+    const owners = await User.find({ role: 'owner' }).select('-password');
+    const hotels = await Hotel.find({
+      user: { $in: owners.map((owner) => owner._id) },
+    });
+
+    return owners.map((owner) => {
+      const ownerHotels = hotels.filter((hotel) =>
+        hotel.user.equals(owner._id as mongoose.Types.ObjectId)
+      );
+      const averageRating =
+        ownerHotels.length > 0
+          ? ownerHotels.reduce((sum, hotel) => sum + (hotel.rating || 0), 0) /
+            ownerHotels.length
+          : 0;
 
       return {
         ...owner.toJSON(),
         hotels: ownerHotels,
-        averageRating: Number(averageRating.toFixed(1))
+        averageRating: Number(averageRating.toFixed(1)),
       };
     });
   }
 
   async getOwnerById(ownerId: string) {
     const owner = await User.findById(ownerId).select('-password');
-    
+
     if (!owner) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
@@ -475,13 +410,14 @@ class AdminService {
       });
     }
 
-    const hotels = await Hotel.find({ user: ownerId })
-      .select('name address status rating totalRooms');
+    const hotels = await Hotel.find({ user: ownerId }).select(
+      'name address status rating totalRooms'
+    );
 
     const ownerData = owner.toJSON();
     return {
       ...ownerData,
-      hotels
+      hotels,
     };
   }
 }
