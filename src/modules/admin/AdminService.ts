@@ -165,9 +165,7 @@ class AdminService {
 
   // Booking Management
   async getAllBookings() {
-    return await Booking.find()
-      .populate('user')
-      .populate('room');
+    return await Booking.find().populate('user').populate('room');
   }
 
   // Review Management
@@ -221,10 +219,13 @@ class AdminService {
 
         const bookings = await Booking.find({
           createdAt: { $gte: startOfMonth, $lte: endOfMonth },
-          status: 'confirmed'
+          status: 'confirmed',
         });
 
-        const revenue = bookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
+        const revenue = bookings.reduce(
+          (sum, booking) => sum + (booking.totalPrice || 0),
+          0
+        );
 
         return {
           month: date.toLocaleString('default', {
@@ -232,7 +233,7 @@ class AdminService {
             year: 'numeric',
           }),
           revenue: Number(revenue.toFixed(2)),
-          bookings: bookings.length
+          bookings: bookings.length,
         };
       })
     );
@@ -240,7 +241,7 @@ class AdminService {
     // Total revenue
     const totalRevenue = await Booking.aggregate([
       { $match: { status: 'completed' } },
-      { $group: { _id: null, total: { $sum: '$totalPrice' } } }
+      { $group: { _id: null, total: { $sum: '$totalPrice' } } },
     ]);
 
     // Booking statistics by time
@@ -351,8 +352,8 @@ class AdminService {
   }
 
   async getOwnerRequestById(requestId: string) {
-    const request = await HotelOwnerRegister.findById(requestId)
-      .populate('user');
+    const request =
+      await HotelOwnerRegister.findById(requestId).populate('user');
     if (!request) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
@@ -364,27 +365,32 @@ class AdminService {
 
   // Owner Management
   async getAllOwners() {
-    const owners = await User.find({ role: 'owner' })
-      .select('-password');
-    const hotels = await Hotel.find({ user: { $in: owners.map(owner => owner._id) } });
-    
-    return owners.map(owner => {
-      const ownerHotels = hotels.filter(hotel => hotel.user.equals(owner._id as mongoose.Types.ObjectId));
-      const averageRating = ownerHotels.length > 0 
-        ? ownerHotels.reduce((sum, hotel) => sum + (hotel.rating || 0), 0) / ownerHotels.length 
-        : 0;
+    const owners = await User.find({ role: 'owner' }).select('-password');
+    const hotels = await Hotel.find({
+      user: { $in: owners.map((owner) => owner._id) },
+    });
+
+    return owners.map((owner) => {
+      const ownerHotels = hotels.filter((hotel) =>
+        hotel.user.equals(owner._id as mongoose.Types.ObjectId)
+      );
+      const averageRating =
+        ownerHotels.length > 0
+          ? ownerHotels.reduce((sum, hotel) => sum + (hotel.rating || 0), 0) /
+            ownerHotels.length
+          : 0;
 
       return {
         ...owner.toJSON(),
         hotels: ownerHotels,
-        averageRating: Number(averageRating.toFixed(1))
+        averageRating: Number(averageRating.toFixed(1)),
       };
     });
   }
 
   async getOwnerById(ownerId: string) {
     const owner = await User.findById(ownerId).select('-password');
-    
+
     if (!owner) {
       throw new BadRequestException({
         errorCode: ErrorCode.NOT_FOUND,
@@ -399,13 +405,14 @@ class AdminService {
       });
     }
 
-    const hotels = await Hotel.find({ user: ownerId })
-      .select('name address status rating totalRooms');
+    const hotels = await Hotel.find({ user: ownerId }).select(
+      'name address status rating totalRooms'
+    );
 
     const ownerData = owner.toJSON();
     return {
       ...ownerData,
-      hotels
+      hotels,
     };
   }
 }
