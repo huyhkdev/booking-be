@@ -59,13 +59,29 @@ class OwnerService {
   
     const withdraw = new Withdraw({
       wallet: wallet._id,
-      amount: transfer.amount / 100, // Lưu số tiền USD
+      amount: amountVND,
       transactionID: transfer.id,
-      amountVND, // Bạn có thể lưu thêm số tiền người dùng nhập
     });
     await withdraw.save();
   }
-  
+
+  async getWallet(uid: string) {
+    const wallet = await Wallet.findOne({ owner: uid });
+    if (!wallet) {
+      throw new BadRequestException({ errorCode: "", errorMessage: "Không tìm thấy ví" });
+    }
+    return wallet;
+  }
+
+  async withdrawHistory(uid: string) {
+    const wallet = await Wallet.findOne({ owner: uid });
+    if (!wallet) {
+      throw new BadRequestException({ errorCode: "", errorMessage: "Không tìm thấy ví" });
+    }
+    const withdraw = await Withdraw.find({ wallet: wallet._id }).sort({ createdAt: -1 });
+
+    return withdraw;
+  }
 
 }
 export default new OwnerService();
