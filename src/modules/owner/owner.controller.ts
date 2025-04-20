@@ -39,6 +39,41 @@ class OwnerController {
     }
   }
 
+
+  async getWallet(
+    request: RequestCustom,
+    response: ResponseCustom,
+    next: NextFunction
+  ) {
+    try {
+      const { uid } = request.userInfo;
+      const data = await ownerService.getWallet(uid);
+      return response.status(HttpStatusCode.OK).json({
+        httpStatusCode: HttpStatusCode.OK,
+        data
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async withdrawHistory(
+    request: RequestCustom,
+    response: ResponseCustom,
+    next: NextFunction
+  ) {
+    try {
+      const { uid } = request.userInfo;
+      const data = await ownerService.withdrawHistory(uid);
+      return response.status(HttpStatusCode.OK).json({
+        httpStatusCode: HttpStatusCode.OK,
+        data
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async findRequest(
     request: RequestCustom,
     response: ResponseCustom,
