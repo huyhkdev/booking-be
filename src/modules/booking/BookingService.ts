@@ -133,7 +133,7 @@ class BookingService {
     if (!hotel) {
       throw new BadRequestException({
         errorCode: "",
-        errorMessage: "Hotel not found"
+        errorMessage: "Không tìm thấy khách sạn"
       });
     }
     return hotel.user.toString() === userId;
@@ -144,7 +144,7 @@ class BookingService {
     if (!isOwner) {
       throw new ForbiddenException({
         errorCode: "FORBIDDEN",
-        errorMessage: "You are not the owner of this hotel"
+        errorMessage: "Bạn không phải chủ của khách sạn này"
       });
     }
 
